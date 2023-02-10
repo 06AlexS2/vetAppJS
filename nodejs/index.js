@@ -4,6 +4,16 @@ const url = require('url')
 //crear stringDecoder para recibir objetos
 const stringDecoder = require('string_decoder').StringDecoder;
 
+let resources = {
+    pets: [
+        {type: 'perro', name: 'mimo', owner: 'Melissa'},
+        {type: 'gato', name: 'shawn', owner: 'Alejandro'},
+        {type: 'pajaro', name: 'trini', owner: 'Oscar'},
+        {type: 'becerro', name: 'jackson', owner: 'Jenny'},
+
+    ]
+}
+
 //el objeto o prototipo http tiene un método que se llama por el punto .
 const serverCallback = (req, res) => {
     //paso 1: obtener la url desde el objeto request "req"
@@ -50,22 +60,35 @@ const serverCallback = (req, res) => {
     req.on('end', () => {
         buffer += decoder.end();
 
+        //reemplazo la variable por lo qud viene en buffer pero en formato JSON
+        if(headers["content-type"] === "application/json"){
+            buffer = JSON.parse(buffer);
+        }
+
+        //paso 3.4.3 revisar si tiene subrutas (o indices en caso de tener un elemento de multiples instancias)
+        //i.e. elemento de un array
+        if(cleanRoute.indexOf('/') > -1) {
+            //separar las rutas
+            var [mainRoute, index] = cleanRoute.split('/');
+        }
+
+
         //paso 3.5 ordenar los datos de respuesta
         //estoy creando lo que llega en request pero de una forma legible para el desarrollador
         const data = {
-            route: cleanRoute,
+            index,
+            route: mainRoute || cleanRoute,
             query,
             method,
             headers,
-            payload: buffer
+            payload: buffer,
         };
 
         //paso 3.6 elegir el manejador de la respuesta dependiendo de la ruta y asignarle la función que el enrutador tiene (handler)
         let handler;
-        //si ruta limpia y enrutador en la posicion de ruta limpia existe:
-        if(cleanRoute && router[cleanRoute]){
+        if(data.route && router[data.route] && router[data.route][method]){
             //dentro de handler estará la funcion que se mande
-            handler = router[cleanRoute];
+            handler = router[data.route][method];
         } else {
             handler = router.notFounded;
         }
@@ -86,6 +109,8 @@ const serverCallback = (req, res) => {
         if(typeof handler === 'function') {
             handler(data, (statusCode = 200, message) => {
                 const response = JSON.stringify(message);
+                //clave valor
+                res.setHeader('Content-Type', "application/json")
                 res.writeHead(statusCode);
                 //linea donde realmente ya estamos respondiendo a la aplicacion cliente
                 res.end(response);
@@ -98,14 +123,29 @@ const router = {
     ruta: (data, callback) => { //esto es un handler, se ve mas a detalle en express.js
         callback(200, {message: 'está es /ruta'})
     },
-    users: (data, callback) => { 
-        callback(200, [{name: 'user 1'}, {name: 'user 2'}])
+    pets: {
+        get: (data, callback) => {
+            if(typeof data.index !== "undefined"){
+                if(resources.pets[data.index]) {
+                    //se utiliza el return para evitar que siga con el callback de abajo
+                    return callback(200, resources.pets[data.index]);
+                }
+                return callback(404, {mensaje: `mascota con indice ${data.index} no encontrada`});
+            }
+            callback(200, resources.pets);
+        },
+
+        post: (data, callback) => {
+            console.log("handler", { data });
+            resources.pets.push(data.payload);
+            callback(201, data.payload);
+        },
     },
 
     notFounded: (data, callback) => {
         callback(404, {message: 'no encontrado'});
-    }
-}
+    },
+};
 
 //la constante server es lo que va a utilizarse para ejecutar
 const server = http.createServer(serverCallback);
