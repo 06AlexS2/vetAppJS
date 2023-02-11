@@ -1,9 +1,7 @@
 const http = require('node:http'); //si no se guarda en una constante
 //no tengo como referenciarme a el para su uso posterior
 const requestHandler = require('./request-handler')
-const resources = require('./resources')
 
-global.resources = resources;
 
 //la constante server es lo que va a utilizarse para ejecutar
 const server = http.createServer(requestHandler);
