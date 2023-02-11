@@ -1,154 +1,12 @@
 const http = require('node:http'); //si no se guarda en una constante
 //no tengo como referenciarme a el para su uso posterior
-const url = require('url')
-//crear stringDecoder para recibir objetos
-const stringDecoder = require('string_decoder').StringDecoder;
+const requestHandler = require('./request-handler')
+const resources = require('./resources')
 
-let resources = {
-    pets: [
-        {type: 'perro', name: 'mimo', owner: 'Melissa'},
-        {type: 'gato', name: 'shawn', owner: 'Alejandro'},
-        {type: 'pajaro', name: 'trini', owner: 'Oscar'},
-        {type: 'becerro', name: 'jackson', owner: 'Jenny'},
-
-    ]
-}
-
-//el objeto o prototipo http tiene un método que se llama por el punto .
-const serverCallback = (req, res) => {
-    //paso 1: obtener la url desde el objeto request "req"
-    const currUrl = req.url;
-    const parsedUrl = url.parse(currUrl, true);
-    console.log({currUrl, parsedUrl});
-
-    //paso 2: obtener la ruta
-    const route = parsedUrl.pathname;
-
-    //paso 3: quitar / de ruta
-    const cleanRoute = route.replace(/^\/+|\/+$/g, '');
-
-    //paso 3.1: obtener el metodo http
-    const method = req.method.toLowerCase();
-
-    //paso 3.2: obtener variables del query url
-
-    //constante hecha con destructuring { constante }
-    /* para hacer un query, en cualquier url o ruta, se utiliza un simbolo '?' para representar todos
-    los querys implementados, y en el navegador, la ruta dice algo como:
-    "http://localhost:8000/ruta?var1=1&var2=2"
-    donde los '&' separan a los querys o variables en la url */
-    //NOTA: el 'query = {} indica que si no hay busquedas o requests de query devuelva un objeto vacio
-    //para evitar errores
-    const { query = {} } = parsedUrl;
-    console.log({query});
-
-    //paso 3.3: obtener los headers desde el request
-    const { headers } = req;
-   
-    //paso 3.4: obtener payload en el caso de haberlo
-    //va a obtener una fuente de información (stream) y la idea es irlos recibiendo e irlos poniendo
-    //en su lugar, de forma que yo entiendo el mensaje
-    const decoder = new stringDecoder('utf-8');
-    let buffer = '';
-    //3.4.1 ir acumulando la data cuando el request reciba un payload, o
-    //request empieza a escuchar cuando le lleguen datos de un payload
-    req.on('data', (data) => {
-        buffer += decoder.write(data);
-    });
-    //3.4.2 terminar de acumular datos y decirle al decoder que finalice
-    //o le indico al decoder que ya no reciba más datos
-    req.on('end', () => {
-        buffer += decoder.end();
-
-        //reemplazo la variable por lo qud viene en buffer pero en formato JSON
-        if(headers["content-type"] === "application/json"){
-            buffer = JSON.parse(buffer);
-        }
-
-        //paso 3.4.3 revisar si tiene subrutas (o indices en caso de tener un elemento de multiples instancias)
-        //i.e. elemento de un array
-        if(cleanRoute.indexOf('/') > -1) {
-            //separar las rutas
-            var [mainRoute, index] = cleanRoute.split('/');
-        }
-
-
-        //paso 3.5 ordenar los datos de respuesta
-        //estoy creando lo que llega en request pero de una forma legible para el desarrollador
-        const data = {
-            index,
-            route: mainRoute || cleanRoute,
-            query,
-            method,
-            headers,
-            payload: buffer,
-        };
-
-        //paso 3.6 elegir el manejador de la respuesta dependiendo de la ruta y asignarle la función que el enrutador tiene (handler)
-        let handler;
-        if(data.route && router[data.route] && router[data.route][method]){
-            //dentro de handler estará la funcion que se mande
-            handler = router[data.route][method];
-        } else {
-            handler = router.notFounded;
-        }
-
-        //paso 4: enviar una respuesta dependiendo de la ruta
-        /*NOTA: te daba el error 'ERR_STREAM_WRITE_AFTER_END' porque despues de un res.end()
-        debes poner return;, de lo contrario, finalizará el stream de requests en el servidor 
-        exhibit A: */
-        /*switch(cleanRoute){
-            case 'ruta':
-                res.end("estas en una ruta conocida")
-                return;
-            default:
-                res.end('esta ruta no es conocida')
-                return;
-        }*/
-
-        if(typeof handler === 'function') {
-            handler(data, (statusCode = 200, message) => {
-                const response = JSON.stringify(message);
-                //clave valor
-                res.setHeader('Content-Type', "application/json")
-                res.writeHead(statusCode);
-                //linea donde realmente ya estamos respondiendo a la aplicacion cliente
-                res.end(response);
-            });
-        }
-    });
-};
-
-const router = {
-    ruta: (data, callback) => { //esto es un handler, se ve mas a detalle en express.js
-        callback(200, {message: 'está es /ruta'})
-    },
-    pets: {
-        get: (data, callback) => {
-            if(typeof data.index !== "undefined"){
-                if(resources.pets[data.index]) {
-                    //se utiliza el return para evitar que siga con el callback de abajo
-                    return callback(200, resources.pets[data.index]);
-                }
-                return callback(404, {mensaje: `mascota con indice ${data.index} no encontrada`});
-            }
-            callback(200, resources.pets);
-        },
-
-        post: (data, callback) => {
-            console.log("handler", { data });
-            resources.pets.push(data.payload);
-            callback(201, data.payload);
-        },
-    },
-
-    notFounded: (data, callback) => {
-        callback(404, {message: 'no encontrado'});
-    },
-};
+global.resources = resources;
 
 //la constante server es lo que va a utilizarse para ejecutar
-const server = http.createServer(serverCallback);
+const server = http.createServer(requestHandler);
 
 //y por ende, server siempre va a estar escuchando en donde uno le indique
 server.listen(8000, ()=>{
@@ -159,4 +17,16 @@ server.listen(8000, ()=>{
 /* si corres este codigo mediante "node index.js", y luego entras a un navegador y escribes "localhost:8000"
 aparecerá una pagina en blanco, indicando que efectivamente está iniciado el servidor http */
 
-/*  */
+/* COMO HACER MODULOS: ESCRIBIR LOS PASOS DE ACUERDO A SU ORDEN:
+CUANDO EL CODIGO YA NO SE SIENTE COMODO O LEGIBLE DE FORMA FACIL, SE DEBE MODULAR O MOCHAR POR PEDAZOS EL MISMO
+1. creas el modulo en un archivo .js, como con router
+2. extraes el fragmento de codigo que quieras modular
+3. para las variables que se utilicen en el nuevo modulo que esten declaradas en otro codigo, como pasa
+aqui en index con resources, debe uno volverlas global tanto en el nuevo modulo como en el codigo original
+¿por que? para que el store de donde se obtienen todos los recursos pueda ser accesible para todos los modulos
+4. para el caso de serverCallback se cambió el nombre a request-handler
+5. no olvidar que, en el nuevo modulo se debe borrar la declaracion de la funcion (i.e. const serverCallback)
+y cambiarlo por "module.exports = funcion"
+6. aquellas variables que se iluminen como inutilizadas debe uno pasarlas al contexto donde se utilizan
+i.e. para request-handler debimos exportar url, stringDecoder y router
+*/
