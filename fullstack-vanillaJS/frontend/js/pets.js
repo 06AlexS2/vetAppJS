@@ -12,67 +12,82 @@ const petOwner = document.getElementById("pet-owner")
 const petForm = document.getElementById("pet-form")
 const petSaveBtn = document.getElementById("pet-savebtn")
 const inputIndex = document.getElementById("pet-index")
+const url = "http://localhost:8000/pets";
 
 
-let pets = [
-    {
-        petType: "Gato",
-        petName : "Manchas",
-        petOwner : "Miguel"
-    },
-    {
-        petType: "Perro",
-        petName : "Firulais",
-        petOwner : "Alejandro"
-    },
-    {
-        petType: "Pájaro",
-        petName : "Pacho",
-        petOwner : "Oscar"
+let pets = []
+
+//como la funcion listar es asincrona, debe declararse como tal
+async function listPets() {
+    //obten de la ruta origen, y cuando obtengas, entonces haz la funcion
+    try {
+        //la respuesta se obtiene al esperar la comunicacion con el server
+        const response  = await fetch(url);
+        //las mascotas esperan a ser listadas en forma de JSON
+        const serverPets = await response.json();
+        //si vienen en forma de array, y no es un array vacio
+        if(Array.isArray(serverPets) && serverPets.length > 0) {
+            pets = serverPets;
+        }
+        const htmlPets = pets.map((pet, index) => 
+        `<tr>
+            <th scope="row">${index}</th>
+            <td>${pet.petType}</td>
+            <td>${pet.petName}</td>
+            <td>${pet.petOwner}</td>
+            <td>
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-info edit" data-toggle="modal" data-target="#exampleModalCenter">Editar</button>
+                <button type="button" class="btn btn-danger delete-pet">Eliminar</button>
+            </div>
+            </td>
+        </tr>`).join("");
+        petList.innerHTML = htmlPets;
+        Array.from(document.getElementsByClassName('edit')).forEach((editBtn, index) => editBtn.onclick = edit(index));
+        Array.from(document.getElementsByClassName('delete-pet')).forEach((deleteBtn, index) => deleteBtn.onclick = deletePet(index));
+
+    } catch (error) {
+        throw error;
     }
-]
-
-function listPets() {
-    const htmlPets = pets.map((pet, index) => 
-    `<tr>
-        <th scope="row">${index}</th>
-        <td>${pet.petType}</td>
-        <td>${pet.petName}</td>
-        <td>${pet.petOwner}</td>
-        <td>
-        <div class="btn-group" role="group" aria-label="Basic example">
-            <button type="button" class="btn btn-info edit" data-toggle="modal" data-target="#exampleModalCenter">Editar</button>
-            <button type="button" class="btn btn-danger delete-pet">Eliminar</button>
-        </div>
-        </td>
-     </tr>`).join("");
-     petList.innerHTML = htmlPets
-     Array.from(document.getElementsByClassName('edit')).forEach((editBtn, index) => editBtn.onclick = edit(index))
-     Array.from(document.getElementsByClassName('delete-pet')).forEach((deleteBtn, index) => deleteBtn.onclick = deletePet(index))
+    
+    
 }
 
-function submitData(event) {
+async function submitData(event) {
     event.preventDefault()
-    const data = {
-        petType: petType.value,
-        petName: petName.value,
-        petOwner: petOwner.value
-
-    }
-    const action = petSaveBtn.innerHTML
-    switch(action) {
-        case "Editar":
+    try {
+        const data = {
+            petType: petType.value,
+            petName: petName.value,
+            petOwner: petOwner.value
+    
+        }
+        let method = "POST";
+        let urlSend = url;
+        const action = petSaveBtn.innerHTML
+        if(action === 'Editar') {
             //editar
-            pets[inputIndex.value] = data
-            break;
-        default:
-            //crear
-            pets.push(data)
-            break;
-
+            method = "PUT";
+            pets[inputIndex.value] = data;
+            //nota: ojo con la notación
+            urlSend = `${url}/${inputIndex.value}`;
+        }
+    
+        const response = await fetch(urlSend, { 
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        if(response.ok) {
+            listPets();
+            resetModal();
+        }
+    } catch (error) {
+        //throw significa lanzar, lo que hace es mostrar el error en la consola con alertas rojas
+        throw error;
     }
-    listPets()
-    resetModal()
+    
+    
 }
 
 function edit(index) {
@@ -102,7 +117,7 @@ function deletePet(index) {
     }
 }
 
-listPets()
+listPets();
 
 petForm.onsubmit = submitData
 petSaveBtn.onclick = submitData

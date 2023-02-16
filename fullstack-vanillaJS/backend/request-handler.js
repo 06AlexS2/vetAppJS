@@ -19,6 +19,22 @@ module.exports = (req, res) => {
     //paso 3.1: obtener el metodo http
     const method = req.method.toLowerCase();
 
+    //paso 3.1.1: dar permisos de CORS escribiendo los headers
+    /* para requests sin credenciales, el valor literal '*' puede ser especificado, como una carta maestra o comodin (wildcard)
+    el valor le dice a los navegadores que permita al codigo solicitado desde cualquier origen a accesar al recurso */
+    //("header", "clave-valor")
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    //Dejaremos que en nuestra API se utilicen esos 5 metodos
+    res.setHeader("Access-Control-Request-Methods", "OPTIONS, GET, PUT, DELETE, POST");
+    res.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET, PUT, DELETE, POST");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    //paso 3.1.2: dar respuesta inmediata cuando el metodo sea options
+    if(method === "options"){
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+
     //paso 3.2: obtener variables del query url
 
     //constante hecha con destructuring { constante }

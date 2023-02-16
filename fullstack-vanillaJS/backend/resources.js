@@ -1,9 +1,9 @@
+//NOTA: CONSERVAR EL MISMO NOMBRE DE OBJETOS TANTO EN RESOURCES COMO EN EL JS
+
 module.exports = {
     pets: [
-        {type: 'perro', name: 'mimo', owner: 'Melissa'},
-        {type: 'gato', name: 'shawn', owner: 'Alejandro'},
-        {type: 'pajaro', name: 'trini', owner: 'Oscar'},
-        {type: 'becerro', name: 'jackson', owner: 'Jenny'},
+        {petType: 'Perro', petName: 'Pimo', petOwner: 'Melissa'},
+        {petType: 'Perro', petName: 'Mumi', petOwner: 'Alejandro'},
 
     ],
 
