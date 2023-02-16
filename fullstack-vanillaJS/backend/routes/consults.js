@@ -1,4 +1,4 @@
-module.exports = function consultsHandler(consults){
+module.exports = function consultsHandler({consults, vets, pets}){
     return {
         get: (data, callback) => {
             if(typeof data.index !== "undefined"){
@@ -8,7 +8,14 @@ module.exports = function consultsHandler(consults){
                 }
                 return callback(404, {mensaje: `consulta con indice ${data.index} no encontrada`});
             }
-            callback(200, consults);
+            //esto no es necesario si tienes una base de datos, es solo si manejas toda la data en la memoria
+            const consultsWithRel = consults.map((indConsult) =>({
+                ...indConsult, 
+                pet: pets[indConsult.pet],
+                vet: vets[indConsult.vet],
+            }));
+
+            callback(200, consultsWithRel);
         },
         
         //IMPORTANTE: NO MUTAR CON .push(), DESTRUCTURAR Y AGREGAR como var = [...var, newAddtoVar]

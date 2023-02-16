@@ -26,7 +26,7 @@ module.exports = {
          vet: 0, 
          createdDate: new Date(),
          editedDate: new Date(),
-         record: '',
-         diagnosis: ''},
+         record: 'la mascota vino con deficit hidrico',
+         diagnosis: 'deshidratación fálica'},
     ]
 }

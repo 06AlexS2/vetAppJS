@@ -15,7 +15,7 @@ module.exports = {
 
     owners: owners(resources.owners),
 
-    consults: consults(resources.consults),
+    consults: consults(resources),
 
     notFounded: (data, callback) => {
         callback(404, {message: 'no encontrado'});
