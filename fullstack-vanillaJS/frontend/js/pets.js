@@ -26,28 +26,36 @@ async function listPets() {
         //las mascotas esperan a ser listadas en forma de JSON
         const serverPets = await response.json();
         //si vienen en forma de array, y no es un array vacio
-        if(Array.isArray(serverPets) && serverPets.length > 0) {
+        if(Array.isArray(serverPets)) {
             pets = serverPets;
         }
-        const htmlPets = pets.map((pet, index) => 
+        if(pets.length > 0){
+            const htmlPets = pets.map((pet, index) => 
+            `<tr>
+                <th scope="row">${index}</th>
+                <td>${pet.petType}</td>
+                <td>${pet.petName}</td>
+                <td>${pet.petOwner}</td>
+                <td>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <button type="button" class="btn btn-info edit" data-toggle="modal" data-target="#exampleModalCenter">Editar</button>
+                    <button type="button" class="btn btn-danger delete-pet">Eliminar</button>
+                </div>
+                </td>
+            </tr>`).join("");
+            petList.innerHTML = htmlPets;
+            Array.from(document.getElementsByClassName('edit')).forEach((editBtn, index) => editBtn.onclick = edit(index));
+            Array.from(document.getElementsByClassName('delete-pet')).forEach((deleteBtn, index) => deleteBtn.onclick = deletePet(index));
+            return;
+        }
+        petList.innerHTML = 
         `<tr>
-            <th scope="row">${index}</th>
-            <td>${pet.petType}</td>
-            <td>${pet.petName}</td>
-            <td>${pet.petOwner}</td>
-            <td>
-            <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-info edit" data-toggle="modal" data-target="#exampleModalCenter">Editar</button>
-                <button type="button" class="btn btn-danger delete-pet">Eliminar</button>
-            </div>
-            </td>
-        </tr>`).join("");
-        petList.innerHTML = htmlPets;
-        Array.from(document.getElementsByClassName('edit')).forEach((editBtn, index) => editBtn.onclick = edit(index));
-        Array.from(document.getElementsByClassName('delete-pet')).forEach((deleteBtn, index) => deleteBtn.onclick = deletePet(index));
+            <td colspan="5">No hay mascotas registradas</td>
+        </tr>`
 
     } catch (error) {
-        throw error;
+        //alert("show") muestra las alertas desde JS
+        $(".alert").show();
     }
     
     
@@ -84,7 +92,8 @@ async function submitData(event) {
         }
     } catch (error) {
         //throw significa lanzar, lo que hace es mostrar el error en la consola con alertas rojas
-        throw error;
+        $(".alert").show();
+        console.log(error);
     }
     
     
@@ -111,10 +120,22 @@ function resetModal() {
 }
 
 function deletePet(index) {
-    return function whenDeleteClicked() {
-        pets = pets.filter((pet, petIndex)=> petIndex !== index)
-        listPets()
-    }
+    const urlSend = `${url}/${index}`
+    return async function whenDeleteClicked() {
+        try {
+            const response = await fetch(urlSend, { 
+                method: "DELETE",
+            });
+            if(response.ok) {
+                listPets();
+                resetModal();
+            }
+        } catch (error) {
+            $(".alert").show();
+            console.log(error);
+        }
+        
+    };
 }
 
 listPets();

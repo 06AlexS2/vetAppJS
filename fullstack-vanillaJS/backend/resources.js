@@ -8,10 +8,10 @@ module.exports = {
     ],
 
     vets: [
-        {name: "Miguel", lastname: "Monroy", document: "123456"},
-        {name: "Luis", lastname: "Ucan", document: "654321"},
-        {name: "Aaron", lastname: "Dominguez", document: "123321"},
-        {name: "Arvin", lastname: "Balam", document: "321123"},
+        {vetName: "Miguel", vetLName: "Monroy", vetId: "12301231", vetCountry: "Mexico"},
+        {vetName: "Luis", vetLName: "Ucan", vetId: "98348234", vetCountry: "Mexico"},
+        {vetName: "Aaron", vetLName: "Dominguez", vetId: "92843612", vetCountry: "Mexico"},
+        {vetName: "Arvin", vetLName: "Balam", vetId: "928374", vetCountry: "Mexico"},
     ],
 
     owners: [
