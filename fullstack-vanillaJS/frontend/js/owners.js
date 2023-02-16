@@ -1,4 +1,4 @@
-const ownerCountry = document.getElementById("owner-country")
+const ownerDocument = document.getElementById("owner-document")
 //const ownerId = document.getElementById("vet-id")
 const ownerName = document.getElementById("owner-name")
 const ownerLName = document.getElementById("owner-lastname")
@@ -6,73 +6,87 @@ const inputIndex = document.getElementById("owner-index")
 const ownerSaveBtn = document.getElementById("owner-savebtn")
 const ownerList = document.getElementById("owner-list")
 const ownerForm = document.getElementById("owner-form")
+const url = "http://localhost:8000/owners";
 
 
+let owners = [];
 
-let owners = [
-    {
-        ownerName : "Alejandro",
-        ownerLName : "Sánchez",
-        ownerCountry : "Gran Santa Fé Norte"
-    },
-    {
-        ownerName : "Meliisa",
-        ownerLName : "Cetina",
-        ownerCountry : "Gran Santa Fé Norte"
-    },
-    {
-        ownerName : "Oscar",
-        ownerLName : "Sánchez",
-        ownerCountry : "Gran Santa Fé Norte"
-    },
-    {
-        ownerName : "Jenny",
-        ownerLName : "Azarcoya",
-        ownerCountry : "Gran Santa Fé Norte"
-    },
-]
+async function listOwners() {
+    try {
+        const response = await fetch(url);
+        const serverOwners = await response.json();
 
-function listOwners() {
-    const htmlOwners = owners.map((owner, index) => 
-    `<tr>
-        <th scope="row">${index}</th>
-        <td>${owner.ownerName}</td>
-        <td>${owner.ownerLName}</td>
-        <td>${owner.ownerCountry}</td>
-        <td>
-            <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-info edit" data-toggle="modal" data-target="#exampleModalCenter">Editar</button>
-                <button type="button" class="btn btn-danger delete-owner">Eliminar</button>
-            </div>
-        </td>
-     </tr>`).join("");
-     ownerList.innerHTML = htmlOwners
-     Array.from(document.getElementsByClassName('edit')).forEach((editBtn, index) => editBtn.onclick = edit(index))
-     Array.from(document.getElementsByClassName('delete-owner')).forEach((deleteBtn, index) => deleteBtn.onclick = deleteVet(index))
+        if(Array.isArray(serverOwners)) {
+            owners = serverOwners;
+        }
+
+        if(owners.length > 0){
+            const htmlOwners = owners.map((owner, index) => 
+            `<tr>
+                <th scope="row">${index}</th>
+                <td>${owner.ownerName}</td>
+                <td>${owner.ownerLName}</td>
+                <td>${owner.ownerDocument}</td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-info edit" data-toggle="modal" data-target="#exampleModalCenter">Editar</button>
+                        <button type="button" class="btn btn-danger delete-owner">Eliminar</button>
+                    </div>
+                </td>
+            </tr>`).join("");
+            ownerList.innerHTML = htmlOwners
+            Array.from(document.getElementsByClassName('edit')).forEach((editBtn, index) => editBtn.onclick = edit(index))
+            Array.from(document.getElementsByClassName('delete-owner')).forEach((deleteBtn, index) => deleteBtn.onclick = deleteOwner(index));
+            return;
+        }
+
+        ownerList.innerHTML = 
+        `<tr>
+            <td colspan="5">No hay dueños registrados.</td>
+        </tr>`;
+    } catch (error) {
+        //alert("show") muestra las alertas desde JS
+        $(".alert").show();
+        console.log(error);
+    }
+
+    
+
+    
 }
 
-function submitData(event) {
-    event.preventDefault()
-    const data = {
-        ownerName : ownerName.value,
-        ownerLName : ownerLName.value,
-        ownerCountry : ownerCountry.value
-
-    }
-    const action = ownerSaveBtn.innerHTML
-    switch(action) {
-        case "Editar":
+async function submitData(event) {
+    event.preventDefault();
+    try {
+        const data = {
+            ownerName : ownerName.value,
+            ownerLName : ownerLName.value,
+            ownerDocument : ownerDocument.value
+    
+        }
+        const action = ownerSaveBtn.innerHTML;
+        let urlSend = url;
+        let method = 'POST';
+        if(action === "Editar") {
             //editar
-            owners[inputIndex.value] = data
-            break;
-        default:
-            //crear
-            owners.push(data)
-            break;
-
+            urlSend += `/${inputIndex.value}`;
+            method = 'PUT';
+        }
+        const response = await fetch(urlSend, { 
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            mode: 'cors',
+        });
+        if(response.ok) {
+            listOwners();
+            resetModal();
+        }
+    } catch (error) {
+        $(".alert").show();
+        console.log(error);
     }
-    listOwners()
-    resetModal()
+    
 }
 
 function edit(index) {
@@ -82,7 +96,7 @@ function edit(index) {
         const owner = owners[index]
         ownerName.value = owner.ownerName
         ownerLName.value = owner.ownerLName
-        ownerCountry.value = owner.ownerCountry
+        ownerDocument.value = owner.ownerDocument
         inputIndex.value = index
     }
 }
@@ -90,19 +104,30 @@ function edit(index) {
 function resetModal() {
     ownerName.value = ""
     ownerLName.value = ""
-    ownerCountry.value = ""
+    ownerDocument.value = ""
     inputIndex.value = ""
     ownerSaveBtn.innerHTML = 'Crear'
 }
 
 function deleteOwner(index) {
-    return function whenDeleteClicked() {
-        owners = owners.filter((owner, ownerIndex)=> ownerIndex !== index)
-        listOwners()
+    const urlSend = `${url}/${index}`
+    return async function whenDeleteClicked() {
+        try {
+            const response = await fetch(urlSend, { 
+                method: "DELETE",
+                mode: 'cors',
+            });
+            if(response.ok) {
+                listOwners();
+            }
+        } catch (error) {
+            $(".alert").show();
+            console.log(error);
+        }
     }
 }
 
-listOwners()
+listOwners();
 
 ownerForm.onsubmit = submitData
 ownerSaveBtn.onclick = submitData

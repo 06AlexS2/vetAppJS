@@ -15,10 +15,10 @@ module.exports = {
     ],
 
     owners: [
-        {name: "Trini", lastname: "Tobago", document: "INE1"},
-        {name: "Kikin", lastname: "Fonseca", document: "INE2"},
-        {name: "Galaxia", lastname: "Firestone", document: "INE3"},
-        {name: "Ba", lastname: "Boni", document: "INE4"},
+        {ownerName : "Alejandro", ownerLName : "Sánchez", ownerDocument : "Identificación Oficial (INE)"},
+        {ownerName : "Meliisa", ownerLName : "Cetina", ownerDocument : "Identificación Oficial (INE)"},
+        {ownerName : "Oscar", ownerLName : "Sánchez", ownerDocument : "Identificación Oficial (INE)"},
+        {ownerName : "Jenny", ownerLName : "Azarcoya", ownerDocument : "Licencia de Conducir"},
     ],
 
     consults: [

@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" 
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="../css/index-styles.css"/>
+    <link rel="stylesheet" href="./css/index-styles.css"/>
 
     <title>Dueños - Veterinaria Pethical</title>
   </head>
@@ -47,7 +47,13 @@
         <h1 class="display-3">Dueños de mascotas</h1>
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
           Crear
-        </button>      
+        </button>
+        <div class="alert alert-danger alert-dismissible" role="alert">
+          <strong>Ups!</strong> ¡Algo salió desbien! Por favor intenta de nuevo.
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>       
       </div>
       <table class="table table-stripped table-hover">
         <thead class="thead-dark">
@@ -55,7 +61,7 @@
             <th scope="col">#</th>
             <th scope="col">Nombre</th>
             <th scope="col">Apellido</th>
-            <th scope="col">Dirección</th>
+            <th scope="col">Documento</th>
             <th scope="col">Acciones</th>
           </tr>
         </thead>
@@ -80,13 +86,13 @@
               <input type="hidden" id="owner-index">
               <div class="form-row">
                 <div class="col">
-                  <select class="form-control" id="owner-country">
-                    <option selected disabled hidden>Colonia</option>
-                    <option>Francisco de Montejo</option>
-                    <option>Gran Santa Fé Norte</option>
-                    <option>Residencial del Norte</option>
-                    <option>Las Américas</option>
-                    <option>Centro</option>
+                  <select class="form-control" id="owner-document">
+                    <option selected disabled hidden>Documento</option>
+                    <option>Identificación Oficial (INE)</option>
+                    <option>Licencia de Conducir</option>
+                    <option>Pasaporte</option>
+                    <option>Acta de Nacimiento</option>
+                    <option>Otro</option>
                   </select>
                 </div>
               </div>
@@ -115,6 +121,6 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script src="../js/owners.js"></script>
+    <script src="./js/owners.js"></script>
   </body>
 </html>
