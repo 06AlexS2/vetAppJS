@@ -11,8 +11,8 @@ module.exports = function consultsHandler({consults, vets, pets}){
             //esto no es necesario si tienes una base de datos, es solo si manejas toda la data en la memoria
             const consultsWithRel = consults.map((indConsult) =>({
                 ...indConsult, 
-                pet: pets[indConsult.pet],
-                vet: vets[indConsult.vet],
+                pet: { ...pets[indConsult.pet], id: indConsult.pet },
+                vet: { ...vets[indConsult.vet], id: indConsult.vet },
             }));
 
             callback(200, consultsWithRel);
